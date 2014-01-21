@@ -1,0 +1,1 @@
+Structures the data that Parramatta City Council provide in their "development application RSS feed":http://eplanning.parracity.nsw.gov.au/ so that it can be used by applications like "PlanningAlerts":http://www.planningalerts.org.au/authorities/parramatta/applications.
