@@ -2,7 +2,6 @@ require 'scraperwiki'
 require 'rss/2.0'
 require 'date'
 require 'mechanize'
-require 'iconv'
 
 url = "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx?o=rss&d=last14days"
 
