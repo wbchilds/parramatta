@@ -20,15 +20,17 @@ t.gsub!("utf-16", "utf-8")
 feed = RSS::Parser.parse(t, false)
 
 feed.channel.items.each do |item|
-  # Seeing a record without an address (which is obviously useless). So, skipping
-  t = item.description.split(/[\.-]/)
-  if t.count >= 2
+  address = item.description[/(.*\d{4})\./, 1]
+  description = item.description[/\d{4}\. (.*)/, 1]
+  council_reference = item.title.split(' ')[0]
+
+  if address && description
     record = {
-      'council_reference' => item.title.split(' ')[0],
-      'description'       => t[1].strip,
+      'council_reference' => council_reference,
+      'description'       => description,
       # Have to make this a string to get the date library to parse it
       'date_received'     => Date.parse(item.pubDate.to_s),
-      'address'           => t[0].strip,
+      'address'           => address,
       'info_url'          => "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx#{item.link}",
       # Comment URL is actually an email address but I think it's best
       # they go to the detail page
@@ -40,6 +42,8 @@ feed.channel.items.each do |item|
     else
        puts "Skipping already saved record " + record['council_reference']
     end
+  else
+    puts "Skipping #{council_reference} as the address and/or description can't be parsed"
   end
 end
 
