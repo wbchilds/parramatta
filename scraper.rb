@@ -27,10 +27,10 @@ feed.channel.items.each do |item|
   if address && description
     record = {
       'council_reference' => council_reference,
-      'description'       => description,
+      'description'       => description.squeeze(' '),
       # Have to make this a string to get the date library to parse it
       'date_received'     => Date.parse(item.pubDate.to_s),
-      'address'           => address,
+      'address'           => address.squeeze(' '),
       'info_url'          => "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx#{item.link}",
       # Comment URL is actually an email address but I think it's best
       # they go to the detail page
