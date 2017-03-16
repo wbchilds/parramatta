@@ -3,7 +3,14 @@ require 'rss/2.0'
 require 'date'
 require 'mechanize'
 
-url = "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx?o=rss&d=last14days"
+if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].is_a )
+  period = ENV['MORPH_PERIOD']
+else
+  period = 7
+end
+
+base_url = "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx"
+url = base_url + "?o=rss&d=last" + period.to_s + "days"
 
 agent = Mechanize.new
 
@@ -31,10 +38,10 @@ feed.channel.items.each do |item|
       # Have to make this a string to get the date library to parse it
       'date_received'     => Date.parse(item.pubDate.to_s),
       'address'           => address.squeeze(' '),
-      'info_url'          => "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx#{item.link}",
+      'info_url'          => base_url + "#{item.link}",
       # Comment URL is actually an email address but I think it's best
       # they go to the detail page
-      'comment_url'       => "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx#{item.link}",
+      'comment_url'       => base_url + "#{item.link}",
       'date_scraped'      => Date.today.to_s
     }
     if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true)
