@@ -39,7 +39,7 @@ feed.channel.items.each do |item|
   description = item.description[/\d{4}\. (.*)/, 1]
   council_reference = item.title.split(' ')[0]
 
-  if (address && description) && (!address.empty? && !description.empty?)
+  if (address && description) && (!address.empty? && !description.empty?) && (address.length <= 75)
     record = {
       'council_reference' => council_reference,
       'description'       => description.squeeze(' '),
