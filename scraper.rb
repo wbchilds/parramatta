@@ -10,8 +10,15 @@ else
 end
 
 base_url = "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx"
-url = base_url + "?o=rss&d=last" + period.to_s + "days"
 comment_url = "mailto:council@cityofparramatta.nsw.gov.au"
+
+# meaning of t parameter
+# %23427 - Development Applications
+# %23437 - Constuction Certificates
+# %23434,%23435 - Complying Development Certificates
+# %23475 - Building Certificates
+# %23440 - Tree Applications
+url = base_url + "?o=rss&d=last" + period.to_s + "days&t=%23437,%23437,%23434,%23435,%23475,%23440"
 
 agent = Mechanize.new
 
