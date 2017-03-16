@@ -4,7 +4,7 @@ require 'date'
 require 'mechanize'
 
 if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].is_a )
-  period = ENV['MORPH_PERIOD']
+  ENV['MORPH_PERIOD'] > 90 ? period = 90 : period = ENV['MORPH_PERIOD']
 else
   period = 7
 end
