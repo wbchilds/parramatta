@@ -3,8 +3,8 @@ require 'rss/2.0'
 require 'date'
 require 'mechanize'
 
-if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].is_a )
-  ENV['MORPH_PERIOD'] > 90 ? period = 90 : period = ENV['MORPH_PERIOD']
+if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].to_i != 0 )
+  ENV['MORPH_PERIOD'].to_i > 90 ? period = 90 : period = ENV['MORPH_PERIOD'].to_i
 else
   period = 7
 end
