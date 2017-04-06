@@ -1,6 +1,4 @@
 require 'scraperwiki'
-require 'rss/2.0'
-require 'date'
 require 'mechanize'
 
 if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].to_i != 0 )
@@ -18,49 +16,39 @@ comment_url = "mailto:council@cityofparramatta.nsw.gov.au"
 # %23434,%23435 - Complying Development Certificates
 # %23475 - Building Certificates
 # %23440 - Tree Applications
-url = base_url + "?o=rss&d=last" + period.to_s + "days&t=%23437,%23437,%23434,%23435,%23475,%23440"
+url = base_url + "?d=last" + period.to_s + "days&t=%23437,%23437,%23434,%23435,%23475,%23440"
 
 agent = Mechanize.new
-
 page = agent.get(url)
-form = page.forms.first
-form.checkbox_with(:name => /Agree/).check
-page = form.submit(form.button_with(:name => /Agree/))
 
-t = page.content.to_s
-# I've no idea why the RSS feed says it's encoded as utf-16 when as far as I can tell it isn't
-# Hack it by switching it back to utf-8
-t.gsub!("utf-16", "utf-8")
+results = page.search('div.result')
+puts results.count.to_s + " Development Applications to scrape"
 
-feed = RSS::Parser.parse(t, false)
+results.each do |result|
+  info_url = base_url + "?" + result.search('a.search')[0]['href'].strip.split("?")[1]
+  detail_page = agent.get(info_url);
 
-feed.channel.items.each do |item|
-  address = item.description[/(.*\d{4})\./, 1]
-  description = item.description[/\d{4}\. (.*)/, 1]
-  council_reference = item.title.split(' ')[0]
+  council_reference = detail_page.search('h2').text.split("\n")[0].strip
+  description = detail_page.search("div#b_ctl00_ctMain_info_app").text.split("Status:")[0].strip.split.join(" ")
+  date_received = detail_page.search("div#b_ctl00_ctMain_info_app").text.split("Lodged: ")[1].split[0]
+  date_received = Date.parse(date_received.to_s)
+  address = detail_page.search("div#b_ctl00_ctMain_info_prop").text.split("\n")[0].squeeze(' ')
 
-  if (address && description) && (!address.empty? && !description.empty?) && (address.length <= 75)
-    record = {
-      'council_reference' => council_reference,
-      'description'       => description.squeeze(' '),
-      # Have to make this a string to get the date library to parse it
-      'date_received'     => Date.parse(item.pubDate.to_s),
-      'address'           => address.squeeze(' '),
-      'info_url'          => base_url + "#{item.link}",
-      # Comment URL is actually an email address but I think it's best
-      # they go to the detail page
-      'comment_url'       => comment_url,
-      'date_scraped'      => Date.today.to_s
-    }
-    if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true)
-      puts "Saving record " + record['council_reference'] + ", " + record['address']
-      # puts record
-      ScraperWiki.save_sqlite(['council_reference'], record)
-    else
-       puts "Skipping already saved record " + record['council_reference']
-    end
+  record = {
+    'council_reference' => council_reference,
+    'description'       => description,
+    'date_received'     => date_received,
+    'address'           => address,
+    'info_url'          => info_url,
+    'comment_url'       => comment_url,
+    'date_scraped'      => Date.today.to_s
+  }
+
+  if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true)
+    puts "Saving record " + record['council_reference'] + ", " + record['address']
+    #puts record
+    ScraperWiki.save_sqlite(['council_reference'], record)
   else
-    puts "Skipping #{council_reference} as the address and/or description can't be parsed"
+    puts "Skipping already saved record " + record['council_reference']
   end
 end
-
