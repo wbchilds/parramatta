@@ -1,10 +1,19 @@
 require 'scraperwiki'
 require 'mechanize'
 
-if ( ENV['MORPH_PERIOD'] && ENV['MORPH_PERIOD'].to_i != 0 )
-  ENV['MORPH_PERIOD'].to_i > 90 ? period = 90 : period = ENV['MORPH_PERIOD'].to_i
+if ( ENV['MORPH_PERIOD'] ) &&
+   ( ENV['MORPH_PERIOD'] == "thismonth" ||
+     ENV['MORPH_PERIOD'] == "lastmonth" ||
+     ENV['MORPH_PERIOD'].to_i != 0 &&
+     ENV['MORPH_PERIOD'].to_i == 7 ||
+     ENV['MORPH_PERIOD'].to_i == 14 )
+  if ( ENV['MORPH_PERIOD'].to_i == 0 )
+    period = ENV['MORPH_PERIOD']
+  else
+    period = "last" + ENV['MORPH_PERIOD'].to_s + "days"
+  end
 else
-  period = 7
+  period = "thismonth"
 end
 
 base_url = "http://eplanning.parracity.nsw.gov.au/Pages/XC.Track/SearchApplication.aspx"
@@ -16,13 +25,13 @@ comment_url = "mailto:council@cityofparramatta.nsw.gov.au"
 # %23434,%23435 - Complying Development Certificates
 # %23475 - Building Certificates
 # %23440 - Tree Applications
-url = base_url + "?d=last" + period.to_s + "days&t=%23437,%23437,%23434,%23435,%23475,%23440"
+url = base_url + "?d=" + period + "&t=%23437,%23437,%23434,%23435,%23475,%23440"
 
 agent = Mechanize.new
 page = agent.get(url)
 
 results = page.search('div.result')
-puts results.count.to_s + " Development Applications to scrape"
+puts results.count.to_s + " Development Applications to scrape. Period: " + period
 
 results.each do |result|
   info_url = base_url + "?" + result.search('a.search')[0]['href'].strip.split("?")[1]
