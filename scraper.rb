@@ -36,8 +36,12 @@ puts results.count.to_s + " Development Applications to scrape. Period: " + peri
 results.each do |result|
   info_url = base_url + "?" + result.search('a.search')[0]['href'].strip.split("?")[1]
   detail_page = agent.get(info_url);
+  re = /\$\s*[0-9,]*/
 
   council_reference = detail_page.search('h2').text.split("\n")[0].strip
+  stat = detail_page.search('strong').text.split("\n")[0].strip
+  cost_re = detail_page.search("div#b_ctl00_ctMain_info_app").text.match re
+  cost = cost_re[0]
   description = detail_page.search("div#b_ctl00_ctMain_info_app").text.split("Status:")[0].strip.split.join(" ")
   date_received = detail_page.search("div#b_ctl00_ctMain_info_app").text.split("Lodged: ")[1].split[0]
   date_received = Date.parse(date_received.to_s)
