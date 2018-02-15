@@ -50,6 +50,8 @@ results.each do |result|
   record = {
     'council_reference' => council_reference,
     'description'       => description,
+    'cost'		         => cost,
+    'status'		      => stat,
     'date_received'     => date_received,
     'address'           => address,
     'info_url'          => info_url,
@@ -58,10 +60,11 @@ results.each do |result|
   }
 
   if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true)
-    puts "Saving record " + record['council_reference'] + ", " + record['address']
+    puts "Saving record " + record['council_reference'] + ", " + record['address']+", " + record['cost']+", "+record['status']
     #puts record
     ScraperWiki.save_sqlite(['council_reference'], record)
   else
     puts "Skipping already saved record " + record['council_reference']
   end
 end
+
